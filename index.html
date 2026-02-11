@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+<title>Card Management</title>
+
+<style>
+
+body{
+background:#eef3f6;
+font-family:Arial;
+display:flex;
+justify-content:center;
+align-items:center;
+height:100vh;
+margin:0;
+}
+
+.box{
+background:white;
+padding:25px;
+border-radius:15px;
+width:380px;
+box-shadow:0 5px 20px rgba(0,0,0,.15);
+text-align:center;
+}
+
+.logo{
+width:120px;
+margin-bottom:10px;
+}
+
+input,select,button{
+width:100%;
+padding:10px;
+margin-top:10px;
+border-radius:6px;
+border:1px solid #ccc;
+font-size:15px;
+}
+
+button{
+background:#00bcd4;
+color:white;
+border:none;
+cursor:pointer;
+}
+
+button:hover{opacity:.8}
+
+.modal{
+position:fixed;
+inset:0;
+background:rgba(0,0,0,.5);
+display:none;
+justify-content:center;
+align-items:center;
+}
+
+.modalBox{
+background:white;
+padding:20px;
+border-radius:10px;
+width:300px;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="box">
+
+<img src="logo.png" class="logo">
+
+<h2>Card System</h2>
+
+<input id="cardId" placeholder="Enter Card ID">
+
+<button onclick="checkCard()">Check Card</button>
+
+<hr>
+
+<h3>Add New Card</h3>
+
+<input id="name" placeholder="Name">
+<input id="phone" placeholder="Phone">
+
+<select id="category">
+<option value="">Select Category</option>
+<option value="Bronze">Bronze</option>
+<option value="Silver">Silver</option>
+<option value="Gold">Gold</option>
+</select>
+
+<input id="discount" placeholder="Discount %" readonly>
+
+<button onclick="addCard()">Add Card</button>
+
+<hr>
+
+<button onclick="deleteCard()">Delete Card</button>
+
+</div>
+
+<div class="modal" id="modal">
+<div class="modalBox" id="modalBox"></div>
+</div>
+
+<script>
+
+const API="https://script.google.com/macros/s/AKfycbw967D2ivg1oDhxhD1QtgXd51Hg7TdWGen7kXfVOeCzxkSbYwz5AkG81EuxHdsCEGJhNg/exec";
+
+const cardInput=document.getElementById("cardId");
+const nameInput=document.getElementById("name");
+const phoneInput=document.getElementById("phone");
+const categoryInput=document.getElementById("category");
+const discountInput=document.getElementById("discount");
+const modal=document.getElementById("modal");
+const modalBox=document.getElementById("modalBox");
+
+categoryInput.addEventListener("change",()=>{
+
+ if(categoryInput.value=="Bronze") discountInput.value=20;
+ if(categoryInput.value=="Silver") discountInput.value=25;
+ if(categoryInput.value=="Gold") discountInput.value=30;
+
+});
+
+function show(msg){
+ modal.style.display="flex";
+ modalBox.innerHTML=msg+"<br><br><button onclick='modal.style.display=\"none\"'>Close</button>";
+}
+
+function checkCard(){
+
+ fetch(`${API}?action=check&id=${cardInput.value}`)
+ .then(r=>r.json())
+ .then(d=>{
+
+ if(d=="NOT_FOUND"){
+ show("Card Not Found");
+ return;
+ }
+
+ show(`
+ID: ${d[0]}<br>
+Name: ${d[1]}<br>
+Phone: ${d[2]}<br>
+Discount: ${d[3]}%<br>
+Category: ${d[4]}<br>
+Grant: ${new Date(d[5]).toLocaleDateString()}<br>
+Expiry: ${new Date(d[6]).toLocaleDateString()}
+`);
+
+ });
+
+}
+
+function addCard(){
+
+ fetch(`${API}?action=add&name=${nameInput.value}&phone=${phoneInput.value}&discount=${discountInput.value}&category=${categoryInput.value}`)
+ .then(r=>r.json())
+ .then(d=>{
+
+ if(d=="PHONE_EXISTS"){
+ show("Phone already registered");
+ return;
+ }
+
+ show("Card Created:<br>"+d);
+
+ nameInput.value="";
+ phoneInput.value="";
+ categoryInput.value="";
+ discountInput.value="";
+
+ });
+
+}
+
+function deleteCard(){
+
+ let id=prompt("Enter Card ID");
+
+ fetch(`${API}?action=delete&id=${id}`)
+ .then(r=>r.json())
+ .then(()=>show("Deleted"));
+
+}
+
+</script>
+
+</body>
+</html>
