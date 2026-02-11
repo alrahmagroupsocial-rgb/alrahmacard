@@ -110,34 +110,28 @@ width:300px;
 
 <script>
 
-const API="https://script.google.com/macros/s/AKfycbzvKPCMZZEuBdh87GRR0-WiSp7S8sTbKSSTEfigtNGjWTREGiJos_xypvk3ABrQmBUQjA/exec";
+const API="https://script.google.com/macros/s/AKfycbwpaPLSu4sKEZiRcFFxmyvlC4V9mufBsXlYWaRblsK9xfdNl_7wkAXpkJDM7JiElf8KJA/exec";
 
-const cardInput=document.getElementById("cardId");
-const nameInput=document.getElementById("name");
-const phoneInput=document.getElementById("phone");
-const categoryInput=document.getElementById("category");
-const discountInput=document.getElementById("discount");
-const modal=document.getElementById("modal");
-const modalBox=document.getElementById("modalBox");
+function jsonp(url,cb){
 
-categoryInput.addEventListener("change",()=>{
+ let s=document.createElement("script");
+ s.src=url+"&callback="+cb;
+ document.body.appendChild(s);
 
- if(categoryInput.value=="Bronze") discountInput.value=20;
- if(categoryInput.value=="Silver") discountInput.value=25;
- if(categoryInput.value=="Gold") discountInput.value=30;
+}
 
-});
-
-function show(msg){
+function show(m){
  modal.style.display="flex";
- modalBox.innerHTML=msg+"<br><br><button onclick='modal.style.display=\"none\"'>Close</button>";
+ modalBox.innerHTML=m+"<br><br><button onclick='modal.style.display=\"none\"'>Close</button>";
 }
 
 function checkCard(){
 
- fetch(`${API}?action=check&id=${cardInput.value}`)
- .then(r=>r.json())
- .then(d=>{
+ jsonp(`${API}?action=check&id=${cardInput.value}`,"handleCheck");
+
+}
+
+function handleCheck(d){
 
  if(d=="NOT_FOUND"){
  show("Card Not Found");
@@ -145,49 +139,43 @@ function checkCard(){
  }
 
  show(`
-ID: ${d[0]}<br>
-Name: ${d[1]}<br>
-Phone: ${d[2]}<br>
-Discount: ${d[3]}%<br>
-Category: ${d[4]}<br>
-Grant: ${new Date(d[5]).toLocaleDateString()}<br>
-Expiry: ${new Date(d[6]).toLocaleDateString()}
+ID:${d[0]}<br>
+Name:${d[1]}<br>
+Phone:${d[2]}<br>
+Discount:${d[3]}%<br>
+Category:${d[4]}<br>
+Grant:${new Date(d[5]).toLocaleDateString()}<br>
+Expiry:${new Date(d[6]).toLocaleDateString()}
 `);
-
- });
 
 }
 
 function addCard(){
 
- fetch(`${API}?action=add&name=${nameInput.value}&phone=${phoneInput.value}&discount=${discountInput.value}&category=${categoryInput.value}`)
- .then(r=>r.json())
- .then(d=>{
+ jsonp(`${API}?action=add&name=${nameInput.value}&phone=${phoneInput.value}&discount=${discountInput.value}&category=${categoryInput.value}`,"handleAdd");
+
+}
+
+function handleAdd(d){
 
  if(d=="PHONE_EXISTS"){
- show("Phone already registered");
+ show("Phone exists");
  return;
  }
 
- show("Card Created:<br>"+d);
-
- nameInput.value="";
- phoneInput.value="";
- categoryInput.value="";
- discountInput.value="";
-
- });
+ show("Created: "+d);
 
 }
 
 function deleteCard(){
 
- let id=prompt("Enter Card ID");
+ let id=prompt("Card ID");
+ jsonp(`${API}?action=delete&id=${id}`,"handleDelete");
 
- fetch(`${API}?action=delete&id=${id}`)
- .then(r=>r.json())
- .then(()=>show("Deleted"));
+}
 
+function handleDelete(){
+ show("Deleted");
 }
 
 </script>
@@ -195,4 +183,5 @@ function deleteCard(){
 </body>
 
 </html>
+
 
