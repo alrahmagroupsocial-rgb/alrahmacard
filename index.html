@@ -121,64 +121,63 @@
     <input id="scanInput" autocomplete="off" placeholder="Tap card now..." />
   </div>
 
-  <script>
-    // ===== CONFIG =====
-    const VALID_USER = "admin";
-    const VALID_PASS = "1234";
-    const BASE_WEBAPP_URL = "https://script.google.com/macros/s/AKfycby1MkdL_dWPZVpYNBd93nCdcMeE42zZcbgDnKEc2iZWi04g2OCUFEnmHD9d6VzT9jJ1GQ/exec";
-    // ==================
+<script>
 
-    // Select elements AFTER the DOM is fully loaded
-    window.addEventListener("DOMContentLoaded", () => {
+const API = "https://script.google.com/macros/s/AKfycbyELcM_NHoFN4rlcgSz5G3NZ0bDMdwwrWuzm_NBBdVtI015aGE3HRS8i_KIABLZfh2Yzg/exec";
 
-      const loginBox = document.getElementById("loginBox");
-      const scannerBox = document.getElementById("scannerBox");
-      const loginBtn = document.getElementById("loginBtn");
-      const loginMsg = document.getElementById("loginMsg");
-      const input = document.getElementById("scanInput");
+function checkCard(){
 
-      function doLogin() {
-        const user = document.getElementById("username").value.trim();
-        const pass = document.getElementById("password").value.trim();
+ let id = document.getElementById("scanInput").value;
 
-        if (user === VALID_USER && pass === VALID_PASS) {
-          loginMsg.style.display = "none";
-          loginBox.style.display = "none";
-          scannerBox.style.display = "block";
-          setTimeout(() => input.focus(), 300);
-        } else {
-          loginMsg.style.display = "block";
-        }
-      }
+ fetch(`${API}?action=check&id=${id}`)
+ .then(r=>r.json())
+ .then(d=>{
 
-      loginBtn.addEventListener("click", doLogin);
+   if(d=="NOT_FOUND"){
+     alert("❌ البطاقة غير موجودة / Not Exist");
+   }else{
+     alert(`
+name: ${d[1]}
+phone: ${d[2]}
+discount: ${d[3]}%
+category: ${d[4]}
+grant: ${d[5]}
+expiry: ${d[6]}
+`);
+   }
 
-      document.getElementById("username").addEventListener("keydown", e => {
-        if (e.key === "Enter") document.getElementById("password").focus();
-      });
+ });
+}
 
-      document.getElementById("password").addEventListener("keydown", e => {
-        if (e.key === "Enter") doLogin();
-      });
+function addCard(){
 
-      function openInNewTab(url) {
-        const newWindow = window.open(url, "_blank", "noopener,noreferrer");
-        if (newWindow) newWindow.focus();
-      }
+ let name = prompt("name");
+ let phone = prompt("phone");
+ let discount = prompt("discount");
+ let category = prompt("category");
 
-      input.addEventListener("keydown", e => {
-        if (e.key === "Enter") {
-          const val = input.value.trim();
-          if (!val) return;
-          const url = val.startsWith("http")
-            ? val
-            : `${BASE_WEBAPP_URL}?id=${encodeURIComponent(val)}`;
-          openInNewTab(url);
-          input.value = "";
-          setTimeout(() => input.focus(), 100);
-        }
-      });
-    });
-  </script>
+ fetch(`${API}?action=add&name=${name}&phone=${phone}&discount=${discount}&category=${category}`)
+ .then(r=>r.json())
+ .then(id=>{
+   alert("Created Successfully: "+id);
+ });
+
+}
+
+function deleteCard(){
+
+ let id = prompt("id");
+
+ fetch(`${API}?action=delete&id=${id}`)
+ .then(r=>r.json())
+ .then(r=>{
+   alert("Successfully Deleted");
+ });
+
+}
+
+</script>
+
 </body>
+
 </html>
